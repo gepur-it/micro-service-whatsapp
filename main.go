@@ -16,7 +16,7 @@ var AMQPChannel *amqp.Channel
 
 var logger = logrus.New()
 
-func init()  {
+func init() {
 	err := godotenv.Load()
 	failOnError(err, "Error loading .env file")
 
@@ -50,13 +50,12 @@ func init()  {
 	failOnError(err, "Failed to connect to RabbitMQ")
 	AMQPConnection = connection
 
-
 	channel, err := AMQPConnection.Channel()
 	failOnError(err, "Failed to open a channel")
 	AMQPChannel = channel
 }
 
 func main() {
-	http.HandleFunc("/", receiver)
+	http.HandleFunc("/instance/", receiver)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("LISTEN_PORT")), nil))
 }

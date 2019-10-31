@@ -6,38 +6,54 @@ import (
 	"github.com/streadway/amqp"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
+type Command struct {
+	Id      string                 `json:"id"`
+	Payload map[string]interface{} `json:"payload"`
+}
+
 func receiver(w http.ResponseWriter, r *http.Request) {
-	callbackRequest := map[string]interface{}{}
+	id := strings.TrimPrefix(r.URL.Path, "/instance/")
 
-	err := json.NewDecoder(r.Body).Decode(&callbackRequest)
-	failOnError(err, "Can`t decode webHook callBack")
+	if id == "" {
+		log.Printf("Received a callback with empty id: %s", id)
+	} else {
+		log.Printf("Received a callback id: %s", id)
 
-	callbackRequestJson, err := json.Marshal(callbackRequest)
-	failOnError(err, "Can`t serialise webHook response")
+		callbackRequest := map[string]interface{}{}
 
-	log.Printf("Received a callback: %s", callbackRequestJson)
+		err := json.NewDecoder(r.Body).Decode(&callbackRequest)
+		failOnError(err, "Can`t decode webHook callBack")
 
-	name := fmt.Sprintf("whats_app_to_erp")
+		command := Command{id, callbackRequest}
 
-	err = AMQPChannel.Publish(
-		"",
-		name,
-		false,
-		false,
-		amqp.Publishing{
-			DeliveryMode: amqp.Transient,
-			ContentType:  "application/json",
-			Body:         callbackRequestJson,
-			Timestamp:    time.Now(),
-		})
+		callbackRequestJson, err := json.Marshal(command)
+		failOnError(err, "Can`t serialise webHook response")
 
-	failOnError(err, "Failed to publish a message")
+		log.Printf("Received a callback: %s", callbackRequestJson)
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	_, err = w.Write(callbackRequestJson)
-	failOnError(err, "Failed to write API answer")
+		name := fmt.Sprintf("whats_app_to_erp")
+
+		err = AMQPChannel.Publish(
+			"",
+			name,
+			false,
+			false,
+			amqp.Publishing{
+				DeliveryMode: amqp.Transient,
+				ContentType:  "application/json",
+				Body:         callbackRequestJson,
+				Timestamp:    time.Now(),
+			})
+
+		failOnError(err, "Failed to publish a message")
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, err = w.Write(callbackRequestJson)
+		failOnError(err, "Failed to write API answer")
+	}
 }
