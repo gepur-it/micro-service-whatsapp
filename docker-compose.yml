@@ -1,0 +1,24 @@
+version: '3.4'
+services:
+
+  micro-service-whatsapp:
+    build: ./
+    container_name: micro-service-whatsapp
+    image: micseres/micro-service-whatsapp
+    networks:
+      erp:
+        ipv4_address: 10.7.0.198
+      go:
+        ipv4_address: 10.9.0.198
+    ports:
+      - "8098:80"
+    volumes:
+      - ./:/app
+    restart: always
+
+networks:
+  go:
+    external: true
+  erp:
+    external: true
+#docker network create --gateway 10.9.0.1 --subnet 10.9.0.0/24 go
