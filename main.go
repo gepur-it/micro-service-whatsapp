@@ -56,6 +56,7 @@ func init() {
 }
 
 func main() {
+	log.Printf("Service started")
 	http.HandleFunc("/", receiver)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("LISTEN_PORT")), nil))
 }
