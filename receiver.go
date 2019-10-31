@@ -16,7 +16,7 @@ type Command struct {
 }
 
 func receiver(w http.ResponseWriter, r *http.Request) {
-	id := strings.TrimPrefix(r.URL.Path, "/instance/")
+	id := strings.TrimPrefix(r.URL.Path, "/")
 
 	if id == "" {
 		log.Printf("Received a callback with empty id: %s", id)

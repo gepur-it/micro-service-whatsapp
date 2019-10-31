@@ -56,6 +56,6 @@ func init() {
 }
 
 func main() {
-	http.HandleFunc("/instance/", receiver)
+	http.HandleFunc("/", receiver)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("LISTEN_PORT")), nil))
 }
